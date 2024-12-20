@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package scheduler.v1;
+
+option go_package = "github.com/paulja/go-work/proto/scheduler";
+
+enum TaskPriority {
+  TASK_PRIORITY_UNSPECIFIED = 0;
+  TASK_PRIORITY_LOW = 1;
+  TASK_PRIORITY_MEDIUM = 2;
+  TASK_PRIORITY_HIGH = 3;
+}
+
+enum TaskStatus {
+  TASK_STATUS_UNSPECIFIED = 0;
+  TASK_STATUS_PENDING = 1;
+  TASK_STATUS_RUNNING = 2;
+  TASK_STATUS_COMPLETED = 3;
+  TASK_STATUS_CANCELLED = 4;
+  TASK_STATUS_ERROR = 5;
+}
+
+message Task {
+  string id = 1;
+  string payload = 2;
+  optional TaskPriority priority = 3;
+  optional TaskStatus status = 4;
+}
+
+message ScheduleTaskRequest {
+  string id = 1;
+  Task task = 2;
+}
+
+message ScheduleTaskResponse {
+  string id = 1;
+}
+
+message CancelTaskRequest {
+  string id = 1;
+}
+
+message CancelTaskResponse {
+  string id = 1;
+  TaskStatus status = 2;
+}
+
+message GetTasksRequest {}
+
+message GetTasksResponse {
+  repeated Task tasks = 1;
+}
+
+service SchedulerService {
+  rpc ScheduleTask(ScheduleTaskRequest) returns (ScheduleTaskResponse) {}
+  rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse) {}
+  rpc GetTasks(GetTasksRequest) returns (GetTasksResponse) {}
+}

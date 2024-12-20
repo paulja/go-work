@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package worker.v1;
+
+option go_package = "github.com/paulja/go-work/proto/worker";
+
+message StartWorkRequest {
+  string id = 1;
+  string payload = 2;
+}
+
+message StartWorkResponse {
+  bool success = 1;
+}
+
+message StopWorkRequest {
+  string id = 1;
+}
+
+message StopWorkResponse {
+  bool success = 1;
+}
+
+service WorkerService {
+  rpc StartWork(StartWorkRequest) returns (StartWorkResponse) {}
+  rpc StopWork(StopWorkRequest) returns (StopWorkResponse) {}
+}
