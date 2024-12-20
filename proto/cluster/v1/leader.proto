@@ -4,27 +4,12 @@ package cluster.v1;
 
 option go_package = "github.com/paulja/go-work/proto/cluster";
 
-enum MemberStatus {
-  MEMBER_STATUS_UNSPECIFIED = 0;
-  MEMBER_STATUS_JOINED = 1;
-  MEMBER_STATUS_LEFT = 2;
-}
-
-enum HeartbeatStatus {
-  HEARTBEAT_STATUS_UNSPECIFIED = 0;
-  HEARTBEAT_STATUS_IDLE = 1;
-  HEARTBEAT_STATUS_BUSY = 2;
-  HEARTBEAT_STATUS_ERROR = 3;
-}
-
 message JoinRequest {
   string id = 1;
   string address = 2;
 }
 
-message JoinResponse {
-  string address = 1;
-}
+message JoinResponse {}
 
 message LeaveRequest {
   string id = 1;
@@ -35,13 +20,20 @@ message LeaveResponse {}
 message Member {
   string id = 1;
   string address = 2;
-  MemberStatus status = 3;
+  string status = 3;
 }
 
 message MembersRequest {}
 
 message MembersResponse {
   repeated Member members = 1;
+}
+
+enum HeartbeatStatus {
+  UNSPECIFIED = 0;
+  IDLE = 1;
+  BUSY = 2;
+  FAILED = 3;
 }
 
 message HeartbeatRequest {
