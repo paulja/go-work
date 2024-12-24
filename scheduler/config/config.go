@@ -24,7 +24,7 @@ func GetRPCPort() int {
 
 func GetHeartbeatTimeout() time.Duration {
 	v, err := strconv.Atoi(os.Getenv("HEARTBEAT_TIMEOUT"))
-	if err != nil {
+	if v <= 0 || err != nil {
 		return 30
 	}
 	return time.Duration(v)
@@ -32,7 +32,7 @@ func GetHeartbeatTimeout() time.Duration {
 
 func GetEnvironment() string {
 	v := os.Getenv("ENV")
-	if v != "" {
+	if v == "" {
 		return "development"
 	}
 	return v
