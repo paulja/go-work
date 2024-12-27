@@ -10,6 +10,7 @@ import (
 	"github.com/paulja/go-work/scheduler/config"
 	"github.com/paulja/go-work/scheduler/internal/domain"
 	"github.com/paulja/go-work/scheduler/internal/ports"
+	"github.com/paulja/go-work/shared"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -41,7 +42,7 @@ func (l *LeaderServer) Start() error {
 	l.conn = listen
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(
-			grpc.UnaryServerInterceptor(CreateLogInterceptor(*l.logger)),
+			grpc.UnaryServerInterceptor(shared.CreateLogInterceptor(*l.logger)),
 		),
 	)
 	env := config.GetEnvironment()
@@ -59,8 +60,7 @@ func (l *LeaderServer) Start() error {
 }
 
 func (l *LeaderServer) Stop() error {
-	l.conn.Close()
-	return nil
+	return l.conn.Close()
 }
 
 func (l *LeaderServer) Join(
