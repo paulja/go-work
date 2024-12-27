@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 
 	"github.com/paulja/go-work/proto/cluster/v1"
@@ -20,13 +21,15 @@ var _ cluster.LeaderServiceServer = (*LeaderServer)(nil)
 type LeaderServer struct {
 	cluster.UnimplementedLeaderServiceServer
 
-	conn  net.Listener
-	store ports.MembershipPort
+	logger *slog.Logger
+	conn   net.Listener
+	store  ports.MembershipPort
 }
 
-func NewLeaderServer(store ports.MembershipPort) *LeaderServer {
+func NewLeaderServer(logger *slog.Logger, store ports.MembershipPort) *LeaderServer {
 	return &LeaderServer{
-		store: store,
+		logger: logger,
+		store:  store,
 	}
 }
 
@@ -36,12 +39,16 @@ func (l *LeaderServer) Start() error {
 		return fmt.Errorf("failed to listen on port: %s", err)
 	}
 	l.conn = listen
-	grpcServer := grpc.NewServer()
-	cluster.RegisterLeaderServiceServer(grpcServer, l)
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			grpc.UnaryServerInterceptor(CreateLogInterceptor(*l.logger)),
+		),
+	)
 	env := config.GetEnvironment()
 	if env == "development" {
 		reflection.Register(grpcServer)
 	}
+	cluster.RegisterLeaderServiceServer(grpcServer, l)
 	go func() {
 		err = grpcServer.Serve(listen)
 	}()

@@ -3,6 +3,7 @@ package grpc_test
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -21,8 +22,9 @@ import (
 
 func TestLeader(t *testing.T) {
 	t.Run("can start and stop leader", func(t *testing.T) {
+		logger := createLogger()
 		m := membership.NewAdapter()
-		l := grpcint.NewLeaderServer(m)
+		l := grpcint.NewLeaderServer(logger, m)
 		assert.NoError(t, l.Start(), "should be able to start leader")
 		assert.NoError(t, l.Stop(), "should be able to stop leader")
 	})
@@ -171,9 +173,17 @@ func TestLeader(t *testing.T) {
 	})
 }
 
+func createLogger() *slog.Logger {
+	logger := slog.Default()
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+	return logger
+}
+
 func testSetupClient(t *testing.T) (cluster.LeaderServiceClient, func()) {
+	logger := createLogger()
+
 	m := membership.NewAdapter()
-	l := grpcint.NewLeaderServer(m)
+	l := grpcint.NewLeaderServer(logger, m)
 	assert.NoError(t, l.Start(), "failed to start leader")
 	conn, err := grpc.NewClient(
 		fmt.Sprintf(":%d", config.GetLeaderPort()),
