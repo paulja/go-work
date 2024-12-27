@@ -83,24 +83,24 @@ func (w *WorkerServer) StartWork(
 		return nil, status.Errorf(codes.AlreadyExists, "Already working")
 	}
 
-	w.heartbeatFunc(HeartbeatStatusBusy)
-
 	w.cancel = make(chan interface{})
-	defer close(w.cancel)
 	min, max := uint(30), uint(60)
 	num := rand.UintN(max-min) + min
 
-	w.logger.Debug("working ", "duration", fmt.Sprintf("%ds", num))
-	select {
-	case <-time.After(time.Duration(num) * time.Second):
-		w.logger.Debug("finished")
-		w.cancel = nil
-	case <-w.cancel:
-		w.logger.Debug("cancelled")
-		w.cancel = nil
-	}
-
-	w.heartbeatFunc(HeartbeatStatusIdle)
+	go func() {
+		w.heartbeatFunc(HeartbeatStatusBusy)
+		w.logger.Debug("working ", "duration", fmt.Sprintf("%ds", num))
+		select {
+		case <-time.After(time.Duration(num) * time.Second):
+			w.logger.Debug("finished")
+			close(w.cancel)
+			w.cancel = nil
+		case <-w.cancel:
+			w.logger.Debug("cancelled")
+			w.cancel = nil
+		}
+		w.heartbeatFunc(HeartbeatStatusIdle)
+	}()
 
 	return &worker.StartWorkResponse{
 		Success: true,
@@ -118,6 +118,7 @@ func (w *WorkerServer) StopWork(
 		return nil, status.Errorf(codes.InvalidArgument, "Id required")
 	}
 
+	w.heartbeatFunc(HeartbeatStatusIdle)
 	if w.cancel != nil {
 		close(w.cancel)
 	}
