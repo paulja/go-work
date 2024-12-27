@@ -20,9 +20,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	w := grpc.NewWorkerServer(logger, hb.ApplyStatus)
+	if err := w.Start(); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
 	logger.Info("worker running",
 		"WORKER_NAME", config.GetName(),
-		"Local Addr", config.GetLocalAddr(),
+		"WORDER_PORT", config.GetWorkerPort(),
 	)
 	hb.ApplyStatus(grpc.HeartbeatStatusIdle)
 
@@ -31,7 +37,11 @@ func main() {
 	<-notifyStream
 
 	if err := hb.Stop(); err != nil {
-		slog.Error(err.Error())
+		slog.Error("problem stopping heartbeat", "err", err.Error())
+		os.Exit(1)
+	}
+	if err := w.Stop(); err != nil {
+		slog.Error("problem stopping worker", "err", err.Error())
 		os.Exit(1)
 	}
 

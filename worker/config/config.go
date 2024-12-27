@@ -39,6 +39,14 @@ func GetName() string {
 	return v
 }
 
+func GetWorkerPort() int {
+	v, err := strconv.Atoi(os.Getenv("WORKER_PORT"))
+	if err != nil {
+		return 40041
+	}
+	return v
+}
+
 func GetLocalAddr() string {
 	addr, err := findLocalIP()
 	if addr == "" || err != nil {
@@ -53,6 +61,14 @@ func GetHeartbeatTimeout() time.Duration {
 		return 15
 	}
 	return time.Duration(v)
+}
+
+func GetEnvironment() string {
+	v := os.Getenv("ENV")
+	if v == "" {
+		return "development"
+	}
+	return v
 }
 
 func findLocalIP() (string, error) {
