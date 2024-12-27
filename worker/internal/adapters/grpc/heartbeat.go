@@ -95,6 +95,7 @@ func (a *Adapter) heartbeatHandler() {
 				Id:     a.id,
 				Status: a.status,
 			})
+			// TODO: handle failures and rejoin/send as needed
 		case <-a.stop:
 			return // stop the timer
 		}

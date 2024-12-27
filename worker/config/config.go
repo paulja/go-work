@@ -25,11 +25,16 @@ func GetSchedulerAddr() string {
 	return v
 }
 
+var name string
+
 func GetName() string {
 	v := os.Getenv("WORKER_NAME")
 	if v == "" {
-		num := rand.IntN(1025)
-		return fmt.Sprintf("WORKER_%d", num)
+		if len(name) == 0 {
+			num := rand.IntN(1025)
+			name = fmt.Sprintf("WORKER_%d", num)
+		}
+		return name
 	}
 	return v
 }
