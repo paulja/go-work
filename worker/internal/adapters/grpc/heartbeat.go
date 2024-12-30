@@ -20,7 +20,7 @@ const (
 	HeartbeatStatusFailed
 )
 
-type Adapter struct {
+type HeartbeatAdapter struct {
 	ctx    context.Context
 	conn   *grpc.ClientConn
 	client cluster.LeaderServiceClient
@@ -31,8 +31,8 @@ type Adapter struct {
 	status cluster.HeartbeatStatus
 }
 
-func NewHeartbeat() *Adapter {
-	return &Adapter{
+func NewHeartbeat() *HeartbeatAdapter {
+	return &HeartbeatAdapter{
 		ctx:  context.Background(),
 		id:   config.GetName(),
 		addr: config.GetLocalAddr(),
@@ -40,7 +40,7 @@ func NewHeartbeat() *Adapter {
 	}
 }
 
-func (a *Adapter) Start() error {
+func (a *HeartbeatAdapter) Start() error {
 	conn, err := grpc.NewClient(
 		config.GetLeaderAddr(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -52,7 +52,7 @@ func (a *Adapter) Start() error {
 	a.client = cluster.NewLeaderServiceClient(conn)
 	_, err = a.client.Join(a.ctx, &cluster.JoinRequest{
 		Id:      a.id,
-		Address: a.addr,
+		Address: config.GetAddr(),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to join with the leader: %s", err)
@@ -62,7 +62,7 @@ func (a *Adapter) Start() error {
 	return nil
 }
 
-func (a *Adapter) Stop() error {
+func (a *HeartbeatAdapter) Stop() error {
 	close(a.stop)
 	_, err := a.client.Leave(a.ctx, &cluster.LeaveRequest{
 		Id: a.id,
@@ -73,7 +73,7 @@ func (a *Adapter) Stop() error {
 	return a.conn.Close()
 }
 
-func (a *Adapter) ApplyStatus(s HeartbeatStatus) {
+func (a *HeartbeatAdapter) ApplyStatus(s HeartbeatStatus) {
 	switch s {
 	case HeartbeatStatusIdle:
 		a.status = cluster.HeartbeatStatus_IDLE
@@ -86,7 +86,7 @@ func (a *Adapter) ApplyStatus(s HeartbeatStatus) {
 	}
 }
 
-func (a *Adapter) heartbeatHandler() {
+func (a *HeartbeatAdapter) heartbeatHandler() {
 	timeout := config.GetHeartbeatTimeout() * time.Second
 	for {
 		select {

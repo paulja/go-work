@@ -22,6 +22,7 @@ const (
 	SchedulerService_ScheduleTask_FullMethodName = "/scheduler.v1.SchedulerService/ScheduleTask"
 	SchedulerService_CancelTask_FullMethodName   = "/scheduler.v1.SchedulerService/CancelTask"
 	SchedulerService_GetTasks_FullMethodName     = "/scheduler.v1.SchedulerService/GetTasks"
+	SchedulerService_TaskComplete_FullMethodName = "/scheduler.v1.SchedulerService/TaskComplete"
 )
 
 // SchedulerServiceClient is the client API for SchedulerService service.
@@ -31,6 +32,7 @@ type SchedulerServiceClient interface {
 	ScheduleTask(ctx context.Context, in *ScheduleTaskRequest, opts ...grpc.CallOption) (*ScheduleTaskResponse, error)
 	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*CancelTaskResponse, error)
 	GetTasks(ctx context.Context, in *GetTasksRequest, opts ...grpc.CallOption) (*GetTasksResponse, error)
+	TaskComplete(ctx context.Context, in *TaskCompleteRequest, opts ...grpc.CallOption) (*TaskCompleteResponse, error)
 }
 
 type schedulerServiceClient struct {
@@ -71,6 +73,16 @@ func (c *schedulerServiceClient) GetTasks(ctx context.Context, in *GetTasksReque
 	return out, nil
 }
 
+func (c *schedulerServiceClient) TaskComplete(ctx context.Context, in *TaskCompleteRequest, opts ...grpc.CallOption) (*TaskCompleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TaskCompleteResponse)
+	err := c.cc.Invoke(ctx, SchedulerService_TaskComplete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SchedulerServiceServer is the server API for SchedulerService service.
 // All implementations must embed UnimplementedSchedulerServiceServer
 // for forward compatibility
@@ -78,6 +90,7 @@ type SchedulerServiceServer interface {
 	ScheduleTask(context.Context, *ScheduleTaskRequest) (*ScheduleTaskResponse, error)
 	CancelTask(context.Context, *CancelTaskRequest) (*CancelTaskResponse, error)
 	GetTasks(context.Context, *GetTasksRequest) (*GetTasksResponse, error)
+	TaskComplete(context.Context, *TaskCompleteRequest) (*TaskCompleteResponse, error)
 	mustEmbedUnimplementedSchedulerServiceServer()
 }
 
@@ -93,6 +106,9 @@ func (UnimplementedSchedulerServiceServer) CancelTask(context.Context, *CancelTa
 }
 func (UnimplementedSchedulerServiceServer) GetTasks(context.Context, *GetTasksRequest) (*GetTasksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTasks not implemented")
+}
+func (UnimplementedSchedulerServiceServer) TaskComplete(context.Context, *TaskCompleteRequest) (*TaskCompleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskComplete not implemented")
 }
 func (UnimplementedSchedulerServiceServer) mustEmbedUnimplementedSchedulerServiceServer() {}
 
@@ -161,6 +177,24 @@ func _SchedulerService_GetTasks_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SchedulerService_TaskComplete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaskCompleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServiceServer).TaskComplete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SchedulerService_TaskComplete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServiceServer).TaskComplete(ctx, req.(*TaskCompleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SchedulerService_ServiceDesc is the grpc.ServiceDesc for SchedulerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -179,6 +213,10 @@ var SchedulerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTasks",
 			Handler:    _SchedulerService_GetTasks_Handler,
+		},
+		{
+			MethodName: "TaskComplete",
+			Handler:    _SchedulerService_TaskComplete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

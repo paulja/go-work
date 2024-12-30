@@ -40,6 +40,9 @@ func TestConfig(t *testing.T) {
 		assert.Equal(t, name, config.GetName(), "should match")
 		os.Unsetenv("WORKER_NAME")
 	})
+	t.Run("can get addr default", func(t *testing.T) {
+		assert.Regexp(t, "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}$", config.GetAddr(), "should be able to get addr")
+	})
 	t.Run("can get worker port default", func(t *testing.T) {
 		assert.Equal(t, 40041, config.GetWorkerPort(), "should be able to get default")
 	})

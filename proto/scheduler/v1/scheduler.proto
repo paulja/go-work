@@ -28,22 +28,16 @@ message Task {
 }
 
 message ScheduleTaskRequest {
-  string id = 1;
-  Task task = 2;
+  Task task = 1;
 }
 
-message ScheduleTaskResponse {
-  string id = 1;
-}
+message ScheduleTaskResponse {}
 
 message CancelTaskRequest {
   string id = 1;
 }
 
-message CancelTaskResponse {
-  string id = 1;
-  TaskStatus status = 2;
-}
+message CancelTaskResponse {}
 
 message GetTasksRequest {}
 
@@ -51,8 +45,16 @@ message GetTasksResponse {
   repeated Task tasks = 1;
 }
 
+message TaskCompleteRequest {
+  string id = 1;
+  optional string error = 2;
+}
+
+message TaskCompleteResponse {}
+
 service SchedulerService {
   rpc ScheduleTask(ScheduleTaskRequest) returns (ScheduleTaskResponse) {}
   rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse) {}
   rpc GetTasks(GetTasksRequest) returns (GetTasksResponse) {}
+  rpc TaskComplete(TaskCompleteRequest) returns (TaskCompleteResponse) {}
 }

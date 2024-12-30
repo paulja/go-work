@@ -39,6 +39,10 @@ func GetName() string {
 	return v
 }
 
+func GetAddr() string {
+	return fmt.Sprintf("%s:%d", GetLocalAddr(), GetWorkerPort())
+}
+
 func GetWorkerPort() int {
 	v, err := strconv.Atoi(os.Getenv("WORKER_PORT"))
 	if err != nil {

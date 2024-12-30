@@ -34,6 +34,14 @@ func TestConfig(t *testing.T) {
 		assert.Equal(t, time.Duration(99), config.GetHeartbeatTimeout(), "should be able to override value")
 		os.Unsetenv("HEARTBEAT_TIMEOUT")
 	})
+	t.Run("can get poll interval default", func(t *testing.T) {
+		assert.Equal(t, time.Duration(30), config.GetPollInterval(), "should be able to get default")
+	})
+	t.Run("can override poll interval", func(t *testing.T) {
+		os.Setenv("POLL_INTERVAL", "99")
+		assert.Equal(t, time.Duration(99), config.GetPollInterval(), "should be able to override value")
+		os.Unsetenv("POLL_INTERVAL")
+	})
 	t.Run("can get environment default", func(t *testing.T) {
 		assert.Equal(t, "development", config.GetEnvironment(), "should be able to get default")
 	})

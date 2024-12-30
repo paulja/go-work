@@ -30,6 +30,14 @@ func GetHeartbeatTimeout() time.Duration {
 	return time.Duration(v)
 }
 
+func GetPollInterval() time.Duration {
+	v, err := strconv.Atoi(os.Getenv("POLL_INTERVAL"))
+	if v <= 0 || err != nil {
+		return 30
+	}
+	return time.Duration(v)
+}
+
 func GetEnvironment() string {
 	v := os.Getenv("ENV")
 	if v == "" {

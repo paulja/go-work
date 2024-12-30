@@ -3,7 +3,6 @@ package grpc_test
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -29,7 +28,7 @@ func TestLeader(t *testing.T) {
 		assert.NoError(t, l.Stop(), "should be able to stop leader")
 	})
 	t.Run("grpc: can join leader", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		_, err := client.Join(context.Background(), &cluster.JoinRequest{
@@ -39,7 +38,7 @@ func TestLeader(t *testing.T) {
 		assert.NoError(t, err, "should be able to join leader")
 	})
 	t.Run("grpc: invaild join leader request", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		_, err := client.Join(context.Background(), &cluster.JoinRequest{
@@ -59,7 +58,7 @@ func TestLeader(t *testing.T) {
 		)
 	})
 	t.Run("grpc: can leave leader", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		ctx := context.Background()
@@ -74,7 +73,7 @@ func TestLeader(t *testing.T) {
 		assert.NoError(t, err, "should be able to leave leader")
 	})
 	t.Run("grpc: invalid leave leader request", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		ctx := context.Background()
@@ -92,7 +91,7 @@ func TestLeader(t *testing.T) {
 		)
 	})
 	t.Run("grpc: can list members", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		ctx := context.Background()
@@ -106,7 +105,7 @@ func TestLeader(t *testing.T) {
 		assert.Len(t, resp.Members, 1, "should have 1 member")
 	})
 	t.Run("grpc: set heartbeat", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		os.Setenv("HEARTBEAT_TIMEOUT", "1") // set heartbeat timeout to 1 second
@@ -144,7 +143,7 @@ func TestLeader(t *testing.T) {
 		assert.Equal(t, "left, unknown", resp.Members[0].Status, "should have LEFT UNKNOWN status")
 	})
 	t.Run("grpc: invalid heartbeat request", func(t *testing.T) {
-		client, stop := testSetupClient(t)
+		client, stop := testSetupLeaderClient(t)
 		defer stop()
 
 		ctx := context.Background()
@@ -173,13 +172,7 @@ func TestLeader(t *testing.T) {
 	})
 }
 
-func createLogger() *slog.Logger {
-	logger := slog.Default()
-	slog.SetLogLoggerLevel(slog.LevelDebug)
-	return logger
-}
-
-func testSetupClient(t *testing.T) (cluster.LeaderServiceClient, func()) {
+func testSetupLeaderClient(t *testing.T) (cluster.LeaderServiceClient, func()) {
 	logger := createLogger()
 
 	m := membership.NewAdapter()

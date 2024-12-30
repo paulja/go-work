@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math/rand/v2"
 	"net"
-	"time"
 
 	"github.com/paulja/go-work/proto/worker/v1"
 	"github.com/paulja/go-work/shared"
 	"github.com/paulja/go-work/worker/config"
+	"github.com/paulja/go-work/worker/internal/app"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -22,7 +21,7 @@ var _ worker.WorkerServiceServer = (*WorkerServer)(nil)
 type WorkerServer struct {
 	worker.UnimplementedWorkerServiceServer
 
-	cancel        chan interface{}
+	work          *app.Worker
 	logger        *slog.Logger
 	heartbeatFunc func(HeartbeatStatus)
 	conn          net.Listener
@@ -79,28 +78,23 @@ func (w *WorkerServer) StartWork(
 		return nil, status.Errorf(codes.InvalidArgument, "Payload required")
 	}
 
-	if w.cancel != nil {
+	if w.work != nil {
 		return nil, status.Errorf(codes.AlreadyExists, "Already working")
 	}
 
-	w.cancel = make(chan interface{})
-	min, max := uint(30), uint(60)
-	num := rand.UintN(max-min) + min
-
+	work := new(app.Worker)
 	go func() {
 		w.heartbeatFunc(HeartbeatStatusBusy)
-		w.logger.Debug("working ", "duration", fmt.Sprintf("%ds", num))
-		select {
-		case <-time.After(time.Duration(num) * time.Second):
-			w.logger.Debug("finished")
-			close(w.cancel)
-			w.cancel = nil
-		case <-w.cancel:
-			w.logger.Debug("cancelled")
-			w.cancel = nil
-		}
+		err := work.Start(req.Id, req.Payload)
+
+		ss := NewSchedulerClient()
+		ss.Connect()
+		ss.TaskComplete(req.Id, errorString(err))
+		ss.Close()
+
 		w.heartbeatFunc(HeartbeatStatusIdle)
 	}()
+	w.work = work
 
 	return &worker.StartWorkResponse{
 		Success: true,
@@ -119,11 +113,17 @@ func (w *WorkerServer) StopWork(
 	}
 
 	w.heartbeatFunc(HeartbeatStatusIdle)
-	if w.cancel != nil {
-		close(w.cancel)
+	if w.work != nil {
+		w.work.Stop(req.Id)
+		w.work = nil
 	}
 
 	return &worker.StopWorkResponse{
 		Success: true,
 	}, nil
+}
+
+func errorString(e error) *string {
+	s := e.Error()
+	return &s
 }
