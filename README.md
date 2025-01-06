@@ -34,12 +34,16 @@ All the communication is over gRPC (non-TLS in this example) using client and se
 ### Testing
 
 The test coverage in the codebase is relatively high, however, there are a few gaps that can be closed, the plan is to close these in the not too distant future.
+
 ### Future
 
-- [ ] Writer a CLI interface to get the status of the Scheduler/Cluster server and to request and cancel work as well as see the status of any running tasks
+- [x] Write a CLI to get a list of members, tasks and schedule work
 - [ ] Put the comms over mTLS (outside of the implementation code, i.e. NGINX or Envoy)
 - [ ] Covert the heartbeat comms between the cluster leader and the members (workers) over a stream
-- [ ] Create a consumer library so arbitrary code can act as a worker (a channel to push work in an event like process)
+- [ ] Create a consumer library to enable custom code to become a worker
+- [ ] Get it working in ECS
+- [ ] Implement RAFT and have multiple leaders
+- [ ] The current task list is an in-memory linked list, make more resilient
 - [ ] There are some TODOs in the code, work to remove them (mainly tests)
 
 ### Useful Commands
