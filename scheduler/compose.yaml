@@ -1,0 +1,9 @@
+name: leader
+services:
+  server:
+    build:
+      context: .
+      target: final
+    ports:
+      - 50051:50051
+      - 50052:50052
