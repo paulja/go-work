@@ -22,8 +22,11 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
-
 	t := app.NewTaskScheduler(logger, m)
+	if err := t.Start(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 	d := grpc.NewScheduleServer(logger, t)
 	if err := d.Start(); err != nil {
 		logger.Error(err.Error())
@@ -41,6 +44,10 @@ func main() {
 
 	if err := l.Stop(); err != nil {
 		slog.Error("problem stopping leader", "err", err.Error())
+		os.Exit(1)
+	}
+	if err := t.Stop(); err != nil {
+		slog.Error("problem stopping task scheduler", "err", err.Error())
 		os.Exit(1)
 	}
 	if err := d.Stop(); err != nil {

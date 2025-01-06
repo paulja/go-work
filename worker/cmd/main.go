@@ -20,8 +20,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO add completion schedule server for completion call back
-
 	w := grpc.NewWorkerServer(logger, hb.ApplyStatus)
 	if err := w.Start(); err != nil {
 		slog.Error(err.Error())

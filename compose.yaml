@@ -1,0 +1,22 @@
+name: go-work
+services:
+  scheduler:
+    build:
+      context: ./scheduler
+      target: final
+    ports:
+      - 50051:50051
+      - 50052:50052
+
+  worker:
+    build:
+      context: ./worker
+      target: final
+    expose:
+      - 40041
+    environment:
+      - LEADER_ADDR=scheduler:50051
+      - SCHEDULER_ADDR=scheduler:50052
+    depends_on:
+      - scheduler
+    scale: 2

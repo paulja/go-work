@@ -124,6 +124,9 @@ func (w *WorkerServer) StopWork(
 }
 
 func errorString(e error) *string {
-	s := e.Error()
-	return &s
+	if e != nil {
+		s := e.Error()
+		return &s
+	}
+	return nil
 }
