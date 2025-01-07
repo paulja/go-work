@@ -139,13 +139,13 @@ func (l *LeaderServer) Heartbeat(
 
 	var s domain.HeartbeatStatus
 	switch req.Status {
-	case cluster.HeartbeatStatus_UNSPECIFIED:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
 		return nil, status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
-	case cluster.HeartbeatStatus_IDLE:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
 		s = domain.HeartbeatStatusIdle
-	case cluster.HeartbeatStatus_BUSY:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
 		s = domain.HeartbeatStatusBusy
-	case cluster.HeartbeatStatus_FAILED:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
 		s = domain.HeartbeatStatusFailed
 	default:
 		return nil, status.Errorf(codes.InvalidArgument, "invalid status")

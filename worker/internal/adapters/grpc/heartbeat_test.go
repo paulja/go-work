@@ -213,13 +213,13 @@ func (l *LeaderMock) Heartbeat(
 
 	var s grpcint.HeartbeatStatus
 	switch req.Status {
-	case cluster.HeartbeatStatus_UNSPECIFIED:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
 		return nil, status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
-	case cluster.HeartbeatStatus_IDLE:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
 		s = grpcint.HeartbeatStatusIdle
-	case cluster.HeartbeatStatus_BUSY:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
 		s = grpcint.HeartbeatStatusBusy
-	case cluster.HeartbeatStatus_FAILED:
+	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
 		s = grpcint.HeartbeatStatusFailed
 	default:
 		return nil, status.Errorf(codes.InvalidArgument, "invalid status")

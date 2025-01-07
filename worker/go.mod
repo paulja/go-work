@@ -3,7 +3,7 @@ module github.com/paulja/go-work/worker
 go 1.23.4
 
 require (
-	github.com/paulja/go-work/proto v0.0.0-20250103162416-307d407cbdb6
+	github.com/paulja/go-work/proto v0.0.0-20250107152206-7d30e2d75718
 	github.com/paulja/go-work/shared v0.0.0-20250103162416-307d407cbdb6
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.69.2

@@ -127,7 +127,7 @@ func TestLeader(t *testing.T) {
 		// set heartbeat and check the member status is as expected
 		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
 			Id:     "1",
-			Status: cluster.HeartbeatStatus_IDLE,
+			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE,
 		})
 		assert.NoError(t, err, "should be able to set heartbeat")
 		resp, err = client.Members(ctx, &cluster.MembersRequest{})
@@ -156,7 +156,7 @@ func TestLeader(t *testing.T) {
 		)
 		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
 			Id:     "1",
-			Status: cluster.HeartbeatStatus_UNSPECIFIED,
+			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED,
 		})
 		assert.Equal(t, codes.InvalidArgument, status.Code(err))
 		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
@@ -166,7 +166,7 @@ func TestLeader(t *testing.T) {
 		assert.Equal(t, codes.InvalidArgument, status.Code(err))
 		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
 			Id:     "1",
-			Status: cluster.HeartbeatStatus_IDLE,
+			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE,
 		})
 		assert.Equal(t, codes.NotFound, status.Code(err))
 	})

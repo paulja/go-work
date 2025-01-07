@@ -82,13 +82,13 @@ func (a *HeartbeatAdapter) ApplyStatus(s HeartbeatStatus) {
 
 	switch s {
 	case HeartbeatStatusIdle:
-		a.status = cluster.HeartbeatStatus_IDLE
+		a.status = cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE
 	case HeartbeatStatusBusy:
-		a.status = cluster.HeartbeatStatus_BUSY
+		a.status = cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY
 	case HeartbeatStatusFailed:
-		a.status = cluster.HeartbeatStatus_FAILED
+		a.status = cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED
 	default:
-		a.status = cluster.HeartbeatStatus_UNSPECIFIED
+		a.status = cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED
 	}
 }
 

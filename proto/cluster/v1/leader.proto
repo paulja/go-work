@@ -30,10 +30,10 @@ message MembersResponse {
 }
 
 enum HeartbeatStatus {
-  UNSPECIFIED = 0;
-  IDLE = 1;
-  BUSY = 2;
-  FAILED = 3;
+  HEARTBEAT_STATUS_UNSPECIFIED = 0;
+  HEARTBEAT_STATUS_IDLE = 1;
+  HEARTBEAT_STATUS_BUSY = 2;
+  HEARTBEAT_STATUS_FAILED = 3;
 }
 
 message HeartbeatRequest {
