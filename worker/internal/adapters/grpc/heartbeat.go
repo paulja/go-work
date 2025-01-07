@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/paulja/go-work/proto/cluster/v1"
@@ -21,6 +22,8 @@ const (
 )
 
 type HeartbeatAdapter struct {
+	sync.Mutex
+
 	ctx    context.Context
 	conn   *grpc.ClientConn
 	client cluster.LeaderServiceClient
@@ -74,6 +77,9 @@ func (a *HeartbeatAdapter) Stop() error {
 }
 
 func (a *HeartbeatAdapter) ApplyStatus(s HeartbeatStatus) {
+	a.Lock()
+	defer a.Unlock()
+
 	switch s {
 	case HeartbeatStatusIdle:
 		a.status = cluster.HeartbeatStatus_IDLE
@@ -91,10 +97,14 @@ func (a *HeartbeatAdapter) heartbeatHandler() {
 	for {
 		select {
 		case <-time.Tick(timeout):
-			a.client.Heartbeat(a.ctx, &cluster.HeartbeatRequest{
+			ctx, cancel := context.WithTimeout(a.ctx, 5*time.Second)
+			a.Lock()
+			a.client.Heartbeat(ctx, &cluster.HeartbeatRequest{
 				Id:     a.id,
 				Status: a.status,
 			})
+			a.Unlock()
+			cancel()
 			// TODO: handle failures and rejoin/send as needed
 		case <-a.stop:
 			return // stop the timer

@@ -3,6 +3,7 @@ package grpc_test
 import (
 	"context"
 	"log/slog"
+	"sync"
 	"testing"
 	"time"
 
@@ -78,6 +79,9 @@ func TestWorker(t *testing.T) {
 		assert.NoError(t, err, "should be able to start work item")
 		assert.True(t, resp.Success, "start work should be a success")
 		time.Sleep(10 * time.Millisecond)
+
+		mu.Lock()
+		mu.Unlock()
 		assert.Equal(t, grpc.HeartbeatStatusBusy, heartbeatStatus, "heartbeat status unexpected")
 		assert.NoError(t, w.Stop(), "should be able to stop worker")
 	})
@@ -115,12 +119,19 @@ func createLogger() *slog.Logger {
 	return logger
 }
 
-var heartbeatStatus grpc.HeartbeatStatus
+var (
+	mu              sync.Mutex
+	heartbeatStatus grpc.HeartbeatStatus
+)
 
 func updateHeartbeatStatus(s grpc.HeartbeatStatus) {
+	mu.Lock()
 	heartbeatStatus = s
+	mu.Unlock()
 }
 
 func resetHeartbeatStatus() {
+	mu.Lock()
 	heartbeatStatus = grpc.HeartbeatStatusIdle
+	mu.Unlock()
 }
