@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/paulja/go-work/proto/worker/v1"
 	"google.golang.org/grpc"
@@ -44,7 +45,10 @@ func (w *WorkerClient) Close() error {
 }
 
 func (w *WorkerClient) StartWork(id, payload string) error {
-	resp, err := w.client.StartWork(w.ctx, &worker.StartWorkRequest{
+	ctx, cancel := context.WithTimeout(w.ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := w.client.StartWork(ctx, &worker.StartWorkRequest{
 		Id:      id,
 		Payload: payload,
 	})
@@ -58,7 +62,10 @@ func (w *WorkerClient) StartWork(id, payload string) error {
 }
 
 func (w *WorkerClient) StopWork(id string) error {
-	resp, err := w.client.StopWork(w.ctx, &worker.StopWorkRequest{
+	ctx, cancel := context.WithTimeout(w.ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := w.client.StopWork(ctx, &worker.StopWorkRequest{
 		Id: id,
 	})
 	if err != nil {

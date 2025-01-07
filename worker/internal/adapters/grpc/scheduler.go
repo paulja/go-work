@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/paulja/go-work/proto/scheduler/v1"
 	"github.com/paulja/go-work/worker/config"
@@ -39,7 +40,10 @@ func (s *SchedulerClient) Close() error {
 }
 
 func (s *SchedulerClient) TaskComplete(id string, errorMessage *string) error {
-	_, err := s.client.TaskComplete(s.ctx, &scheduler.TaskCompleteRequest{
+	ctx, cancel := context.WithTimeout(s.ctx, 5*time.Second)
+	defer cancel()
+
+	_, err := s.client.TaskComplete(ctx, &scheduler.TaskCompleteRequest{
 		Id:    id,
 		Error: errorMessage,
 	})
