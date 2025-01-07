@@ -172,8 +172,8 @@ func workerStopWork(address, id string) error {
 func (s *TaskScheduler) firstAvailbleMember() (*domain.Member, bool) {
 	list, _ := s.store.ListMembers()
 	for _, v := range list {
-		if v.MembershipStatus == domain.MembershipStatusAlive &&
-			v.HeartbeatStatus == domain.HeartbeatStatusIdle {
+		if v.MembershipStatus() == domain.MembershipStatusAlive &&
+			v.HeartbeatStatus() == domain.HeartbeatStatusIdle {
 			return v, true
 		}
 	}

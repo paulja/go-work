@@ -62,7 +62,7 @@ func (a *Adapter) UpdateMemberStatus(id string, status domain.MembershipStatus) 
 	}
 
 	a.Lock()
-	a.store[id].MembershipStatus = status
+	a.store[id].SetMembershipStatus(status)
 	a.Unlock()
 
 	return nil

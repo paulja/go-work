@@ -18,33 +18,34 @@ func TestDomain(t *testing.T) {
 	})
 	t.Run("can update heartbeat status", func(t *testing.T) {
 		m := domain.NewMember("1", "localhost")
-		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus)
+		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus())
 		m.UpdateHeartbeatStatus(domain.HeartbeatStatusBusy)
-		assert.Equal(t, domain.HeartbeatStatusBusy, m.HeartbeatStatus)
+		assert.Equal(t, domain.HeartbeatStatusBusy, m.HeartbeatStatus())
 	})
 	t.Run("update heartbeat status expires", func(t *testing.T) {
 		m := domain.NewMember("1", "locahost")
 		os.Setenv("HEARTBEAT_TIMEOUT", "1")
 
-		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus)
-		assert.Equal(t, domain.MembershipStatusUnknown, m.MembershipStatus)
+		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus())
+		assert.Equal(t, domain.MembershipStatusUnknown, m.MembershipStatus())
 		m.UpdateHeartbeatStatus(domain.HeartbeatStatusBusy)
-		assert.Equal(t, domain.HeartbeatStatusBusy, m.HeartbeatStatus)
-		assert.Equal(t, domain.MembershipStatusAlive, m.MembershipStatus)
+		assert.Equal(t, domain.HeartbeatStatusBusy, m.HeartbeatStatus())
+		assert.Equal(t, domain.MembershipStatusAlive, m.MembershipStatus())
 
-		time.Sleep(1 * time.Second)
-		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus)
-		assert.Equal(t, domain.MembershipStatusLeft, m.MembershipStatus)
+		time.Sleep(1200 * time.Millisecond)
+
+		assert.Equal(t, domain.HeartbeatStatusUnknown, m.HeartbeatStatus())
+		assert.Equal(t, domain.MembershipStatusLeft, m.MembershipStatus())
 	})
 	t.Run("can get status string", func(t *testing.T) {
 		m := domain.NewMember("1", "localhost")
 		os.Setenv("HEARTBEAT_TIMEOUT", "1")
 
-		assert.Equal(t, "unknown, unknown", m.StatusSting(), "should be able to get status string")
+		assert.Equal(t, "unknown, unknown", m.StatusString(), "should be able to get string")
 		m.UpdateHeartbeatStatus(domain.HeartbeatStatusBusy)
-		assert.Equal(t, domain.MembershipStatusAlive, m.MembershipStatus)
-		assert.Equal(t, "alive, busy", m.StatusSting(), "should be able to get status string")
+		assert.Equal(t, domain.MembershipStatusAlive, m.MembershipStatus())
+		assert.Equal(t, "alive, busy", m.StatusString(), "should be able to get string")
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, "left, unknown", m.StatusSting(), "should be able to get status string")
+		assert.Equal(t, "left, unknown", m.StatusString(), "should be able to get string")
 	})
 }

@@ -77,3 +77,9 @@ Add a task to the scheduler.
 ```sh
 grpcurl -plaintext -d '{"task": {"id":"1","payload":"do some work"}}' :50052 scheduler.v1.SchedulerService.ScheduleTask
 ```
+
+Cancel a task from the scheduler.
+
+```sh
+grpcurl -plaintext -d '{"id":"1"}' :50052 scheduler.v1.SchedulerService.CancelTask
+```

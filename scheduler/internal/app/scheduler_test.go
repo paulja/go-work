@@ -83,8 +83,8 @@ func TestScheduler(t *testing.T) {
 		logger := createLogger()
 		store := membership.NewAdapter()
 		m := domain.NewMember("1", ":40041")
-		m.HeartbeatStatus = domain.HeartbeatStatusIdle
-		m.MembershipStatus = domain.MembershipStatusAlive
+		m.SetHeartbeatStatus(domain.HeartbeatStatusIdle)
+		m.SetMembershipStatus(domain.MembershipStatusAlive)
 		store.AddMember(m)
 
 		s := app.NewTaskScheduler(logger, store)

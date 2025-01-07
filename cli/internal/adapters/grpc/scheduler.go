@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/paulja/go-work/cli/config"
 	"github.com/paulja/go-work/proto/scheduler/v1"
@@ -32,7 +33,10 @@ func (c *SchedulerClient) Close() error {
 }
 
 func (s *SchedulerClient) GetTasks() ([]*scheduler.Task, error) {
-	resp, err := s.client.GetTasks(context.Background(), &scheduler.GetTasksRequest{})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.client.GetTasks(ctx, &scheduler.GetTasksRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +44,10 @@ func (s *SchedulerClient) GetTasks() ([]*scheduler.Task, error) {
 }
 
 func (s *SchedulerClient) AddTask(id, payload string, priority scheduler.TaskPriority) error {
-	_, err := s.client.ScheduleTask(context.Background(), &scheduler.ScheduleTaskRequest{
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := s.client.ScheduleTask(ctx, &scheduler.ScheduleTaskRequest{
 		Task: &scheduler.Task{
 			Id:       id,
 			Payload:  payload,
@@ -54,7 +61,10 @@ func (s *SchedulerClient) AddTask(id, payload string, priority scheduler.TaskPri
 }
 
 func (s *SchedulerClient) RemoveTask(id string) error {
-	_, err := s.client.CancelTask(context.Background(), &scheduler.CancelTaskRequest{
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := s.client.CancelTask(ctx, &scheduler.CancelTaskRequest{
 		Id: id,
 	})
 	if err != nil {

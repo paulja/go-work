@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/paulja/go-work/scheduler/config"
@@ -33,10 +34,12 @@ const (
 )
 
 type Member struct {
-	Id               string
-	Address          string
-	MembershipStatus MembershipStatus
-	HeartbeatStatus  HeartbeatStatus
+	sync.Mutex
+	membershipStatus MembershipStatus
+	heartbeatStatus  HeartbeatStatus
+
+	Id      string
+	Address string
 
 	timeoutFunc func()
 }
@@ -48,23 +51,51 @@ func NewMember(id, address string) *Member {
 	}
 }
 
+func (m *Member) MembershipStatus() MembershipStatus {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.membershipStatus
+}
+
+func (m *Member) SetMembershipStatus(s MembershipStatus) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.membershipStatus = s
+}
+
+func (m *Member) HeartbeatStatus() HeartbeatStatus {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.heartbeatStatus
+}
+
+func (m *Member) SetHeartbeatStatus(s HeartbeatStatus) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.heartbeatStatus = s
+}
+
 func (m *Member) UpdateHeartbeatStatus(status HeartbeatStatus) {
-	m.MembershipStatus = MembershipStatusAlive
-	m.HeartbeatStatus = status
+	m.SetMembershipStatus(MembershipStatusAlive)
+	m.SetHeartbeatStatus(status)
 
 	m.timeoutFunc = nil
 	m.timeoutFunc = func() {
 		<-time.After(config.GetHeartbeatTimeout() * time.Second)
-		m.MembershipStatus = MembershipStatusLeft
-		m.HeartbeatStatus = HeartbeatStatusUnknown
+		m.SetMembershipStatus(MembershipStatusLeft)
+		m.SetHeartbeatStatus(HeartbeatStatusUnknown)
 	}
 	go m.timeoutFunc()
 }
 
-func (m *Member) StatusSting() string {
+func (m *Member) StatusString() string {
 	status := strings.Builder{}
 
-	switch m.MembershipStatus {
+	switch m.MembershipStatus() {
 	case MembershipStatusAlive:
 		status.WriteString("alive")
 	case MembershipStatusLeft:
@@ -75,7 +106,7 @@ func (m *Member) StatusSting() string {
 
 	status.WriteString(", ")
 
-	switch m.HeartbeatStatus {
+	switch m.HeartbeatStatus() {
 	case HeartbeatStatusIdle:
 		status.WriteString("idle")
 	case HeartbeatStatusBusy:

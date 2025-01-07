@@ -120,7 +120,7 @@ func (l *LeaderServer) Members(
 		resp.Members = append(resp.Members, &cluster.Member{
 			Id:      m.Id,
 			Address: m.Address,
-			Status:  m.StatusSting(),
+			Status:  m.StatusString(),
 		})
 	}
 	return resp, nil
