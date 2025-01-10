@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"sync"
@@ -69,29 +70,39 @@ func (s *Tasks) Add(t *Task) {
 	s.c += 1
 }
 
-func (s *Tasks) Stream() <-chan *Task {
+func (s *Tasks) Stream(ctx context.Context) <-chan *Task {
 	stream := make(chan *Task)
-	node := s.head
+	s.Lock()
 	go func() {
-		s.Lock()
 		defer func() {
 			s.Unlock()
 			close(stream)
 		}()
 
+		if s.head == nil {
+			return
+		}
+		node := s.head
 		for {
-			if node == nil {
+			select {
+			case stream <- node:
+				if node == nil || node.Next == nil {
+					return
+				}
+				node = node.Next
+			case <-ctx.Done():
 				return
 			}
-			stream <- node
-			node = node.Next
 		}
 	}()
 	return stream
 }
 
 func (s *Tasks) Id(id string) *Task {
-	for t := range s.Stream() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for t := range s.Stream(ctx) {
 		if strings.Compare(t.Id, id) == 0 {
 			return t
 		}
@@ -100,8 +111,10 @@ func (s *Tasks) Id(id string) *Task {
 }
 
 func (s *Tasks) Status(status TaskStatus) []*Task {
+	ctx := context.Background()
+
 	tasks := make([]*Task, 0, 8)
-	for t := range s.Stream() {
+	for t := range s.Stream(ctx) {
 		if t.Status == status {
 			tasks = append(tasks, t)
 		}

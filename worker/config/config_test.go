@@ -54,6 +54,11 @@ func TestConfig(t *testing.T) {
 	t.Run("can find local addr default", func(t *testing.T) {
 		assert.Regexp(t, "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", config.GetLocalAddr(), "should be able to get default")
 	})
+	t.Run("can override local addr", func(t *testing.T) {
+		os.Setenv("LOCAL_ADDR", "1.2.3.4")
+		assert.Equal(t, "1.2.3.4", config.GetLocalAddr())
+		os.Unsetenv("LOCAL_ADDR")
+	})
 	t.Run("can get heartbeat timeout default", func(t *testing.T) {
 		assert.Equal(t, time.Duration(15), config.GetHeartbeatTimeout(), "should be able to get default")
 	})

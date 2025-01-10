@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"context"
 	"slices"
 	"testing"
 
@@ -41,7 +42,7 @@ func TestTasks(t *testing.T) {
 		tasks.Add(domain.NewTask("4", "testing"))
 
 		count := 0
-		for t := range tasks.Stream() {
+		for t := range tasks.Stream(context.Background()) {
 			if t != nil {
 				count += 1
 			}
@@ -86,7 +87,7 @@ func TestTasks(t *testing.T) {
 		tasks.Add(&domain.Task{Id: "4", Payload: "testing4", Priority: domain.TaskPriorityHigh})
 
 		list := make([]*domain.Task, 0, tasks.Count())
-		for t := range tasks.Stream() {
+		for t := range tasks.Stream(context.Background()) {
 			list = append(list, t)
 		}
 		slices.SortFunc(list, tasks.ComparePriority)

@@ -1,3 +1,4 @@
+name: worker
 services:
   server:
     build:
@@ -5,3 +6,7 @@ services:
       target: final
     ports:
       - 40041:40041
+    environment:
+      LEADER_ADDR: "host.docker.internal:50051"
+      SCHEDULER_ADDR: "host.docker.internal:50052"
+      LOCAL_ADDR: "host.docker.internal:40041"

@@ -38,6 +38,8 @@ The test coverage in the codebase is relatively high, however, there are a few g
 ### Future
 
 - [x] Write a CLI to get a list of members, tasks and schedule work
+  - [x] The system hangs after work is scheduled and you try to list tasks
+  - [x] Only one worker is scheduled to work no matter if more are free
 - [ ] Put the comms over mTLS (outside of the implementation code, i.e. NGINX or Envoy)
 - [ ] Covert the heartbeat comms between the cluster leader and the members (workers) over a stream
 - [ ] Create a consumer library to enable custom code to become a worker

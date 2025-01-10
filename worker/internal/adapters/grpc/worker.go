@@ -93,6 +93,7 @@ func (w *WorkerServer) StartWork(
 		ss.Close()
 
 		w.heartbeatFunc(HeartbeatStatusIdle)
+		w.work = nil
 	}()
 	w.work = work
 

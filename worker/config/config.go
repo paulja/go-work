@@ -52,11 +52,15 @@ func GetWorkerPort() int {
 }
 
 func GetLocalAddr() string {
-	addr, err := findLocalIP()
-	if addr == "" || err != nil {
-		return "127.0.0.1"
+	v := os.Getenv("LOCAL_ADDR")
+	if v == "" {
+		addr, err := findLocalIP()
+		if addr == "" || err != nil {
+			return "127.0.0.1"
+		}
+		return addr
 	}
-	return addr
+	return v
 }
 
 func GetHeartbeatTimeout() time.Duration {

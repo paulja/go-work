@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"slices"
@@ -106,8 +107,10 @@ func (s *TaskScheduler) Completed(id string, err error) error {
 }
 
 func (s *TaskScheduler) List() []*domain.Task {
+	ctx := context.Background()
+
 	tasks := make([]*domain.Task, 0, s.tasks.Count())
-	for t := range s.tasks.Stream() {
+	for t := range s.tasks.Stream(ctx) {
 		tasks = append(tasks, t)
 	}
 	return tasks
