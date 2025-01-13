@@ -125,11 +125,15 @@ func TestLeader(t *testing.T) {
 		)
 
 		// set heartbeat and check the member status is as expected
-		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
+		stream, err := client.Heartbeat(ctx)
+		assert.NoError(t, err, "should be able to create heartbeat")
+		err = stream.Send(&cluster.HeartbeatRequest{
 			Id:     "1",
 			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE,
 		})
 		assert.NoError(t, err, "should be able to set heartbeat")
+		err = stream.CloseSend()
+		assert.NoError(t, err, "should be able close heartbeat stream")
 		resp, err = client.Members(ctx, &cluster.MembersRequest{})
 		assert.NoError(t, err, "should be able to list members")
 		assert.Equal(t, "alive, idle", resp.Members[0].Status, "should have ALIVE IDLE status")
@@ -147,28 +151,46 @@ func TestLeader(t *testing.T) {
 		defer stop()
 
 		ctx := context.Background()
-		_, err := client.Heartbeat(ctx, &cluster.HeartbeatRequest{
+		stream, err := client.Heartbeat(ctx)
+		assert.NoError(t, err, "should be able to create heartbeat")
+		stream.Send(&cluster.HeartbeatRequest{
 			Id: "",
 		})
+		_, err = stream.Recv()
 		assert.ErrorIs(t, err, status.Errorf(
 			codes.InvalidArgument, domain.ErrIdRequired.Error()),
 			"should return id required error",
 		)
-		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
+		stream.CloseSend()
+
+		stream, err = client.Heartbeat(ctx)
+		stream.Send(&cluster.HeartbeatRequest{
 			Id:     "1",
 			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED,
 		})
+		_, err = stream.Recv()
 		assert.Equal(t, codes.InvalidArgument, status.Code(err))
-		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
+		stream.CloseSend()
+
+		stream, err = client.Heartbeat(ctx)
+		stream.Send(&cluster.HeartbeatRequest{
 			Id:     "1",
 			Status: 5,
 		})
+		_, err = stream.Recv()
 		assert.Equal(t, codes.InvalidArgument, status.Code(err))
-		_, err = client.Heartbeat(ctx, &cluster.HeartbeatRequest{
+		stream.CloseSend()
+
+		stream, err = client.Heartbeat(ctx)
+		stream.Send(&cluster.HeartbeatRequest{
 			Id:     "1",
 			Status: cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE,
 		})
+		_, err = stream.Recv()
 		assert.Equal(t, codes.NotFound, status.Code(err))
+		err = stream.CloseSend()
+
+		assert.NoError(t, err, "should be able close heartbeat stream")
 	})
 }
 

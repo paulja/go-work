@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
 	"sync"
 	"time"
 
@@ -93,18 +94,35 @@ func (a *HeartbeatAdapter) ApplyStatus(s HeartbeatStatus) {
 }
 
 func (a *HeartbeatAdapter) heartbeatHandler() {
+	ctx, cancel := context.WithTimeout(a.ctx, 5*time.Second)
+	defer cancel()
+
+loop:
+	stream, serr := a.client.Heartbeat(ctx)
+	if serr != nil {
+		// TODO report error
+	}
+	defer stream.CloseSend()
+
 	timeout := config.GetHeartbeatTimeout() * time.Second
 	for {
 		select {
 		case <-time.Tick(timeout):
-			ctx, cancel := context.WithTimeout(a.ctx, 5*time.Second)
 			a.Lock()
-			a.client.Heartbeat(ctx, &cluster.HeartbeatRequest{
-				Id:     a.id,
-				Status: a.status,
-			})
+			status := a.status
 			a.Unlock()
-			cancel()
+
+			serr = stream.Send(&cluster.HeartbeatRequest{
+				Id:     a.id,
+				Status: status,
+			})
+			_, err := stream.Recv()
+			if err != nil {
+				// TODO report error
+			}
+			if serr == io.EOF {
+				goto loop
+			}
 			// TODO: handle failures and rejoin/send as needed
 		case <-a.stop:
 			return // stop the timer

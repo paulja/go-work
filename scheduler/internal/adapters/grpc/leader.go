@@ -126,40 +126,39 @@ func (l *LeaderServer) Members(
 	return resp, nil
 }
 
-func (l *LeaderServer) Heartbeat(
-	ctx context.Context,
-	req *cluster.HeartbeatRequest,
-) (
-	*cluster.HeartbeatResponse,
-	error,
-) {
-	if req.Id == "" {
-		return nil, status.Errorf(codes.InvalidArgument, domain.ErrIdRequired.Error())
-	}
-
-	var s domain.HeartbeatStatus
-	switch req.Status {
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
-		return nil, status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
-		s = domain.HeartbeatStatusIdle
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
-		s = domain.HeartbeatStatusBusy
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
-		s = domain.HeartbeatStatusFailed
-	default:
-		return nil, status.Errorf(codes.InvalidArgument, "invalid status")
-	}
-
-	err := l.store.UpdateHeartbeatStatus(req.Id, s)
-	if err != nil {
-		switch err.Error() {
-		case domain.ErrMemberNotFound.Error():
-			return nil, status.Errorf(codes.NotFound, "member not found")
-		default:
-			return nil, status.Errorf(codes.Internal, "failed to update heartbeat status: %s", err)
+func (l *LeaderServer) Heartbeat(stream cluster.LeaderService_HeartbeatServer) error {
+	for {
+		req, err := stream.Recv()
+		if err != nil {
+			return status.Error(codes.Unknown, err.Error())
 		}
-	}
+		if req.Id == "" {
+			return status.Error(codes.InvalidArgument, domain.ErrIdRequired.Error())
+		}
 
-	return &cluster.HeartbeatResponse{}, nil
+		var s domain.HeartbeatStatus
+		switch req.Status {
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
+			return status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
+			s = domain.HeartbeatStatusIdle
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
+			s = domain.HeartbeatStatusBusy
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
+			s = domain.HeartbeatStatusFailed
+		default:
+			return status.Errorf(codes.InvalidArgument, "invalid status")
+		}
+
+		err = l.store.UpdateHeartbeatStatus(req.Id, s)
+		if err != nil {
+			switch err.Error() {
+			case domain.ErrMemberNotFound.Error():
+				return status.Errorf(codes.NotFound, "member not found")
+			default:
+				return status.Errorf(codes.Internal, "failed to update heartbeat status: %s", err)
+			}
+		}
+		stream.Send(&cluster.HeartbeatResponse{})
+	}
 }

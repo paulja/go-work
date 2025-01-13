@@ -32,7 +32,7 @@ type LeaderServiceClient interface {
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error)
 	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveResponse, error)
 	Members(ctx context.Context, in *MembersRequest, opts ...grpc.CallOption) (*MembersResponse, error)
-	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
+	Heartbeat(ctx context.Context, opts ...grpc.CallOption) (LeaderService_HeartbeatClient, error)
 }
 
 type leaderServiceClient struct {
@@ -73,14 +73,36 @@ func (c *leaderServiceClient) Members(ctx context.Context, in *MembersRequest, o
 	return out, nil
 }
 
-func (c *leaderServiceClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
+func (c *leaderServiceClient) Heartbeat(ctx context.Context, opts ...grpc.CallOption) (LeaderService_HeartbeatClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(HeartbeatResponse)
-	err := c.cc.Invoke(ctx, LeaderService_Heartbeat_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &LeaderService_ServiceDesc.Streams[0], LeaderService_Heartbeat_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &leaderServiceHeartbeatClient{ClientStream: stream}
+	return x, nil
+}
+
+type LeaderService_HeartbeatClient interface {
+	Send(*HeartbeatRequest) error
+	Recv() (*HeartbeatResponse, error)
+	grpc.ClientStream
+}
+
+type leaderServiceHeartbeatClient struct {
+	grpc.ClientStream
+}
+
+func (x *leaderServiceHeartbeatClient) Send(m *HeartbeatRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *leaderServiceHeartbeatClient) Recv() (*HeartbeatResponse, error) {
+	m := new(HeartbeatResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // LeaderServiceServer is the server API for LeaderService service.
@@ -90,7 +112,7 @@ type LeaderServiceServer interface {
 	Join(context.Context, *JoinRequest) (*JoinResponse, error)
 	Leave(context.Context, *LeaveRequest) (*LeaveResponse, error)
 	Members(context.Context, *MembersRequest) (*MembersResponse, error)
-	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
+	Heartbeat(LeaderService_HeartbeatServer) error
 	mustEmbedUnimplementedLeaderServiceServer()
 }
 
@@ -107,8 +129,8 @@ func (UnimplementedLeaderServiceServer) Leave(context.Context, *LeaveRequest) (*
 func (UnimplementedLeaderServiceServer) Members(context.Context, *MembersRequest) (*MembersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Members not implemented")
 }
-func (UnimplementedLeaderServiceServer) Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+func (UnimplementedLeaderServiceServer) Heartbeat(LeaderService_HeartbeatServer) error {
+	return status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
 }
 func (UnimplementedLeaderServiceServer) mustEmbedUnimplementedLeaderServiceServer() {}
 
@@ -177,22 +199,30 @@ func _LeaderService_Members_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LeaderService_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HeartbeatRequest)
-	if err := dec(in); err != nil {
+func _LeaderService_Heartbeat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(LeaderServiceServer).Heartbeat(&leaderServiceHeartbeatServer{ServerStream: stream})
+}
+
+type LeaderService_HeartbeatServer interface {
+	Send(*HeartbeatResponse) error
+	Recv() (*HeartbeatRequest, error)
+	grpc.ServerStream
+}
+
+type leaderServiceHeartbeatServer struct {
+	grpc.ServerStream
+}
+
+func (x *leaderServiceHeartbeatServer) Send(m *HeartbeatResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *leaderServiceHeartbeatServer) Recv() (*HeartbeatRequest, error) {
+	m := new(HeartbeatRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(LeaderServiceServer).Heartbeat(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: LeaderService_Heartbeat_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LeaderServiceServer).Heartbeat(ctx, req.(*HeartbeatRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 // LeaderService_ServiceDesc is the grpc.ServiceDesc for LeaderService service.
@@ -214,11 +244,14 @@ var LeaderService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Members",
 			Handler:    _LeaderService_Members_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "Heartbeat",
-			Handler:    _LeaderService_Heartbeat_Handler,
+			StreamName:    "Heartbeat",
+			Handler:       _LeaderService_Heartbeat_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "cluster/v1/leader.proto",
 }

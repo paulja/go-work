@@ -200,35 +200,33 @@ func (l *LeaderMock) Leave(
 	return &cluster.LeaveResponse{}, nil
 }
 
-func (l *LeaderMock) Heartbeat(
-	ctx context.Context,
-	req *cluster.HeartbeatRequest,
-) (
-	*cluster.HeartbeatResponse,
-	error,
-) {
-	if req.Id == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "id required")
+func (l *LeaderMock) Heartbeat(stream cluster.LeaderService_HeartbeatServer) error {
+	for {
+		req, err := stream.Recv()
+		if err != nil {
+			return err
+		}
+		if req.Id == "" {
+			return status.Errorf(codes.InvalidArgument, "id required")
+		}
+
+		var s grpcint.HeartbeatStatus
+		switch req.Status {
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
+			return status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
+			s = grpcint.HeartbeatStatusIdle
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
+			s = grpcint.HeartbeatStatusBusy
+		case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
+			s = grpcint.HeartbeatStatusFailed
+		default:
+			return status.Errorf(codes.InvalidArgument, "invalid status")
+		}
+
+		l.Lock()
+		l.heartbeatCallCount += 1
+		l.status = s
+		l.Unlock()
 	}
-
-	var s grpcint.HeartbeatStatus
-	switch req.Status {
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_UNSPECIFIED:
-		return nil, status.Errorf(codes.InvalidArgument, "UNSPECIFIED is an invalid status")
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_IDLE:
-		s = grpcint.HeartbeatStatusIdle
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_BUSY:
-		s = grpcint.HeartbeatStatusBusy
-	case cluster.HeartbeatStatus_HEARTBEAT_STATUS_FAILED:
-		s = grpcint.HeartbeatStatusFailed
-	default:
-		return nil, status.Errorf(codes.InvalidArgument, "invalid status")
-	}
-
-	l.Lock()
-	l.heartbeatCallCount += 1
-	l.status = s
-	l.Unlock()
-
-	return &cluster.HeartbeatResponse{}, nil
 }

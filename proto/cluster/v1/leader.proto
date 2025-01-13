@@ -47,5 +47,5 @@ service LeaderService {
   rpc Join(JoinRequest) returns (JoinResponse) {}
   rpc Leave(LeaveRequest) returns (LeaveResponse) {}
   rpc Members(MembersRequest) returns (MembersResponse) {}
-  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {}
+  rpc Heartbeat(stream HeartbeatRequest) returns (HeartbeatResponse) {}
 }
