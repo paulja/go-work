@@ -1,5 +1,13 @@
 name: go-work
+version: "3"
 services:
+  envoy:
+    image: envoyproxy/envoy:v131-latest
+    ports:
+      - 10000:10000
+    volumes:
+      - ./etc/envoy/envoy.yaml:/etc/envoy/envoy.yaml
+
   scheduler:
     build:
       context: ./scheduler
