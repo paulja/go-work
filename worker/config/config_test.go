@@ -75,4 +75,12 @@ func TestConfig(t *testing.T) {
 		assert.Equal(t, "testing", config.GetEnvironment(), "should be able to override value")
 		os.Unsetenv("ENV")
 	})
+	t.Run("can get server name", func(t *testing.T) {
+		assert.Equal(t, "localhost", config.GetServerName(), "should be able to get default")
+	})
+	t.Run("can override server name", func(t *testing.T) {
+		os.Setenv("SERVER_NAME", "scheduler")
+		assert.Equal(t, "scheduler", config.GetServerName(), "should be able to get default")
+		os.Unsetenv("SERVER_NAME")
+	})
 }

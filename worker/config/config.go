@@ -39,6 +39,14 @@ func GetName() string {
 	return v
 }
 
+func GetServerName() string {
+	v := os.Getenv("SERVER_NAME")
+	if v == "" {
+		return "localhost"
+	}
+	return v
+}
+
 func GetAddr() string {
 	return fmt.Sprintf("%s:%d", GetLocalAddr(), GetWorkerPort())
 }

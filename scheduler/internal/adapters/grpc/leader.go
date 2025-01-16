@@ -11,8 +11,10 @@ import (
 	"github.com/paulja/go-work/scheduler/internal/domain"
 	"github.com/paulja/go-work/scheduler/internal/ports"
 	"github.com/paulja/go-work/shared"
+	"github.com/paulja/go-work/shared/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
@@ -40,7 +42,12 @@ func (l *LeaderServer) Start() error {
 		return fmt.Errorf("failed to listen on port: %s", err)
 	}
 	l.conn = listen
+	schedulerTLS, err := tls.SchedulerTLSConfig(config.GetServerName())
+	if err != nil {
+		return fmt.Errorf("failed to server TLS: %s", err)
+	}
 	grpcServer := grpc.NewServer(
+		grpc.Creds(credentials.NewTLS(schedulerTLS)),
 		grpc.UnaryInterceptor(
 			grpc.UnaryServerInterceptor(shared.CreateLogInterceptor(*l.logger)),
 		),

@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/paulja/go-work/proto/worker/v1"
+	"github.com/paulja/go-work/scheduler/config"
+	"github.com/paulja/go-work/shared/tls"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -28,9 +30,13 @@ func NewWorkerClient() *WorkerClient {
 }
 
 func (w *WorkerClient) Connect(addr string) error {
+	workerTLS, err := tls.WorkerTLSConfig(config.GetServerName())
+	if err != nil {
+		return err
+	}
 	conn, err := grpc.NewClient(
 		addr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(credentials.NewTLS(workerTLS)),
 	)
 	if err != nil {
 		return err

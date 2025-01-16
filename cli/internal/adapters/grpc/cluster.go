@@ -5,8 +5,9 @@ import (
 
 	"github.com/paulja/go-work/cli/config"
 	"github.com/paulja/go-work/proto/cluster/v1"
+	"github.com/paulja/go-work/shared/tls"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type ClusterClient struct {
@@ -15,9 +16,13 @@ type ClusterClient struct {
 }
 
 func (c *ClusterClient) Connect() error {
+	cliTLS, err := tls.CliTLSConfig(config.GetServerName())
+	if err != nil {
+		return err
+	}
 	conn, err := grpc.NewClient(
 		config.GetClusterAddr(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(credentials.NewTLS(cliTLS)),
 	)
 	if err != nil {
 		return err

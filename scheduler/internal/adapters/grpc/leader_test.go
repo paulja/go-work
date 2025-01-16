@@ -12,10 +12,11 @@ import (
 	grpcint "github.com/paulja/go-work/scheduler/internal/adapters/grpc"
 	"github.com/paulja/go-work/scheduler/internal/adapters/membership"
 	"github.com/paulja/go-work/scheduler/internal/domain"
+	"github.com/paulja/go-work/shared/tls"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -178,9 +179,11 @@ func testSetupLeaderClient(t *testing.T) (cluster.LeaderServiceClient, func()) {
 	m := membership.NewAdapter()
 	l := grpcint.NewLeaderServer(logger, m)
 	assert.NoError(t, l.Start(), "failed to start leader")
+	creds, err := tls.WorkerTLSConfig("localhost")
+	assert.NoError(t, err, "failed to get client TLS")
 	conn, err := grpc.NewClient(
 		fmt.Sprintf(":%d", config.GetLeaderPort()),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(credentials.NewTLS(creds)),
 	)
 	assert.NoError(t, err, "failed to connect to leader")
 

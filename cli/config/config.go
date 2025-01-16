@@ -17,3 +17,11 @@ func GetSchedulerAddr() string {
 	}
 	return v
 }
+
+func GetServerName() string {
+	v := os.Getenv("SERVER_NAME")
+	if v == "" {
+		return "localhost"
+	}
+	return v
+}

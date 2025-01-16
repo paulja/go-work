@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/paulja/go-work/proto/cluster/v1"
+	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type HeartbeatStatus int
@@ -44,9 +45,13 @@ func NewHeartbeat() *HeartbeatAdapter {
 }
 
 func (a *HeartbeatAdapter) Start() error {
+	workerTLS, err := tls.WorkerTLSConfig(config.GetServerName())
+	if err != nil {
+		return err
+	}
 	conn, err := grpc.NewClient(
 		config.GetLeaderAddr(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(credentials.NewTLS(workerTLS)),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to connect to leader: %s", err)
