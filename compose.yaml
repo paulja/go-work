@@ -4,6 +4,8 @@ services:
     build:
       context: ./scheduler
       target: final
+    environment:
+      - SERVER_NAME=scheduler
     ports:
       - 50051:50051
       - 50052:50052
@@ -17,6 +19,7 @@ services:
     environment:
       - LEADER_ADDR=scheduler:50051
       - SCHEDULER_ADDR=scheduler:50052
+      - SERVER_NAME=scheduler
     depends_on:
       - scheduler
     scale: 2

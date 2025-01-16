@@ -6,8 +6,9 @@ import (
 
 	"github.com/paulja/go-work/cli/config"
 	"github.com/paulja/go-work/proto/scheduler/v1"
+	"github.com/paulja/go-work/shared/tls"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type SchedulerClient struct {
@@ -16,9 +17,13 @@ type SchedulerClient struct {
 }
 
 func (s *SchedulerClient) Connect() error {
+	cliTLS, err := tls.CliTLSConfig(config.GetServerName())
+	if err != nil {
+		return err
+	}
 	conn, err := grpc.NewClient(
 		config.GetSchedulerAddr(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(credentials.NewTLS(cliTLS)),
 	)
 	if err != nil {
 		return err

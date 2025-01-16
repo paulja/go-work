@@ -7,19 +7,21 @@ import (
 	"testing"
 
 	"github.com/paulja/go-work/proto/scheduler/v1"
+	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
-	"github.com/paulja/go-work/worker/internal/adapters/grpc"
+	grpcint "github.com/paulja/go-work/worker/internal/adapters/grpc"
 	"github.com/stretchr/testify/assert"
-	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 func TestScheduler(t *testing.T) {
 	t.Run("can create scheduler client", func(t *testing.T) {
-		s := grpc.NewSchedulerClient()
+		s := grpcint.NewSchedulerClient()
 		assert.NotNil(t, s, "should be able to create object")
 	})
 	t.Run("can connect and close client", func(t *testing.T) {
-		s := grpc.NewSchedulerClient()
+		s := grpcint.NewSchedulerClient()
 		assert.NoError(t, s.Connect(), "should be able to connect client")
 		assert.NoError(t, s.Close(), "should be able to close client")
 	})
@@ -28,7 +30,7 @@ func TestScheduler(t *testing.T) {
 		ss.Start()
 		defer ss.Stop()
 
-		sc := grpc.NewSchedulerClient()
+		sc := grpcint.NewSchedulerClient()
 		assert.NoError(t, sc.Connect(), "should be able to connect client")
 		defer sc.Close()
 		assert.NoError(t, sc.TaskComplete("1", nil), "should be able to mark complete")
@@ -53,7 +55,13 @@ func (s *ScheduleServerMock) Start() error {
 		return fmt.Errorf("failed to listen on port: %s", err)
 	}
 	s.conn = listen
-	grpcServer := ggrpc.NewServer()
+	schedulerTLS, err := tls.SchedulerTLSConfig(config.GetServerName())
+	if err != nil {
+		return fmt.Errorf("failed to server TLS: %s", err)
+	}
+	grpcServer := grpc.NewServer(
+		grpc.Creds(credentials.NewTLS(schedulerTLS)),
+	)
 	scheduler.RegisterSchedulerServiceServer(grpcServer, s)
 	go func() {
 		err = grpcServer.Serve(listen)

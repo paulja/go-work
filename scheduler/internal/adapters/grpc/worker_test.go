@@ -8,10 +8,12 @@ import (
 
 	"github.com/paulja/go-work/proto/worker/v1"
 	grpcint "github.com/paulja/go-work/scheduler/internal/adapters/grpc"
+	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -69,7 +71,13 @@ func (w *WorkerServerMock) Start() error {
 		return fmt.Errorf("failed to listen on port: %s", err)
 	}
 	w.conn = listen
-	grpcServer := grpc.NewServer()
+	workerTLS, err := tls.WorkerServerTLSConfig(config.GetServerName())
+	if err != nil {
+		return fmt.Errorf("failed to server TLS: %s", err)
+	}
+	grpcServer := grpc.NewServer(
+		grpc.Creds(credentials.NewTLS(workerTLS)),
+	)
 	worker.RegisterWorkerServiceServer(grpcServer, w)
 	go func() {
 		err = grpcServer.Serve(listen)

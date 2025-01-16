@@ -14,6 +14,14 @@ func GetLeaderPort() int {
 	return v
 }
 
+func GetServerName() string {
+	v := os.Getenv("SERVER_NAME")
+	if v == "" {
+		return "localhost"
+	}
+	return v
+}
+
 func GetRPCPort() int {
 	v, err := strconv.Atoi(os.Getenv("RPC_PORT"))
 	if err != nil {

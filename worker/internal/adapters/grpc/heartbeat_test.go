@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/paulja/go-work/proto/cluster/v1"
+	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
 	grpcint "github.com/paulja/go-work/worker/internal/adapters/grpc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -138,7 +140,13 @@ func (l *LeaderMock) Start() error {
 		return fmt.Errorf("failed to listen: %s", config.GetLeaderAddr())
 	}
 	l.conn = listen
-	grpcServer := grpc.NewServer()
+	schedulerTLS, err := tls.SchedulerTLSConfig(config.GetServerName())
+	if err != nil {
+		return fmt.Errorf("failed to server TLS: %s", err)
+	}
+	grpcServer := grpc.NewServer(
+		grpc.Creds(credentials.NewTLS(schedulerTLS)),
+	)
 	cluster.RegisterLeaderServiceServer(grpcServer, l)
 	go func() {
 		err = grpcServer.Serve(listen)
