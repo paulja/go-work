@@ -7,7 +7,7 @@ import (
 
 	"github.com/paulja/go-work/proto/worker/v1"
 	"github.com/paulja/go-work/scheduler/config"
-	"github.com/paulja/go-work/shared/tls"
+	"github.com/paulja/go-work/scheduler/internal/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

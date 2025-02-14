@@ -33,13 +33,6 @@ var (
 	WorkerKey []byte
 )
 
-var (
-	//go:embed cli.pem
-	CliCert []byte
-	//go:embed cli-key.pem
-	CliKey []byte
-)
-
 func SchedulerTLSConfig(serverName string) (*tls.Config, error) {
 	cert, err := tls.X509KeyPair(SchedulerServerCert, SchedulerServerKey)
 	if err != nil {
@@ -78,23 +71,6 @@ func WorkerServerTLSConfig(serverName string) (*tls.Config, error) {
 
 func WorkerTLSConfig(serverName string) (*tls.Config, error) {
 	cert, err := tls.X509KeyPair(WorkerCert, WorkerKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load client cert pair: %v", err)
-	}
-	ca := x509.NewCertPool()
-	if ok := ca.AppendCertsFromPEM(CACert); !ok {
-		return nil, fmt.Errorf("failed to load client CA cert")
-	}
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      ca,
-		ServerName:   serverName,
-	}
-	return tlsConfig, nil
-}
-
-func CliTLSConfig(serverName string) (*tls.Config, error) {
-	cert, err := tls.X509KeyPair(CliCert, CliKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load client cert pair: %v", err)
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/paulja/go-work/scheduler/internal/adapters/membership"
 	"github.com/paulja/go-work/scheduler/internal/app"
 	"github.com/paulja/go-work/scheduler/internal/domain"
-	"github.com/paulja/go-work/shared/tls"
+	"github.com/paulja/go-work/scheduler/internal/tls"
 	"github.com/paulja/go-work/worker/config"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

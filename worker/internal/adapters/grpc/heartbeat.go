@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/paulja/go-work/proto/cluster/v1"
-	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
+	"github.com/paulja/go-work/worker/internal/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

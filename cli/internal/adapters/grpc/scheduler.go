@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/paulja/go-work/cli/config"
+	"github.com/paulja/go-work/cli/internal/tls"
 	"github.com/paulja/go-work/proto/scheduler/v1"
-	"github.com/paulja/go-work/shared/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

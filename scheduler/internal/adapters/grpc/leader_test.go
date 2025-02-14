@@ -12,7 +12,7 @@ import (
 	grpcint "github.com/paulja/go-work/scheduler/internal/adapters/grpc"
 	"github.com/paulja/go-work/scheduler/internal/adapters/membership"
 	"github.com/paulja/go-work/scheduler/internal/domain"
-	"github.com/paulja/go-work/shared/tls"
+	"github.com/paulja/go-work/scheduler/internal/tls"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

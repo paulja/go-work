@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/paulja/go-work/proto/scheduler/v1"
-	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
 	grpcint "github.com/paulja/go-work/worker/internal/adapters/grpc"
+	"github.com/paulja/go-work/worker/internal/tls"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

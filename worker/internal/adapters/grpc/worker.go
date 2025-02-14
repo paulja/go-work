@@ -8,9 +8,9 @@ import (
 
 	"github.com/paulja/go-work/proto/worker/v1"
 	"github.com/paulja/go-work/shared"
-	"github.com/paulja/go-work/shared/tls"
 	"github.com/paulja/go-work/worker/config"
 	"github.com/paulja/go-work/worker/internal/app"
+	"github.com/paulja/go-work/worker/internal/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
