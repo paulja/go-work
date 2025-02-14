@@ -1,6 +1,6 @@
 {
-  "CN": "worker.jaaco.cloud",
-  "hosts": ["worker.jaaco.cloud", "worker", "localhost"],
+  "CN": "scheduler.jaaco.cloud",
+  "hosts": ["scheduler.jaaco.cloud", "scheduler", "localhost"],
   "key": {
     "algo": "rsa",
     "size": 2048

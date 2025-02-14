@@ -34,7 +34,26 @@ gencert:
 .PHONY: gencert
 
 copy:
-	@cp *.pem ../shared/tls
+	# cli certs
+	@cp ca.pem ../cli/internal/tls
+	@cp cli.pem ../cli/internal/tls
+	@cp cli-key.pem ../cli/internal/tls
+	# scheduler certs
+	@cp ca.pem ../scheduler/internal/tls
+	@cp scheduler.pem ../scheduler/internal/tls
+	@cp scheduler-key.pem ../scheduler/internal/tls
+	@cp worker.pem ../scheduler/internal/tls
+	@cp worker-key.pem ../scheduler/internal/tls
+	@cp worker-server.pem ../scheduler/internal/tls
+	@cp worker-server-key.pem ../scheduler/internal/tls
+	# worker certs
+	@cp ca.pem ../worker/internal/tls
+	@cp scheduler.pem ../worker/internal/tls
+	@cp scheduler-key.pem ../worker/internal/tls
+	@cp worker.pem ../worker/internal/tls
+	@cp worker-key.pem ../worker/internal/tls
+	@cp worker-server.pem ../worker/internal/tls
+	@cp worker-server-key.pem ../worker/internal/tls
 .PHONY: copy
 
 clear:
